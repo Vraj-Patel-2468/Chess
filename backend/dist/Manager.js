@@ -19,17 +19,16 @@ class Manager {
     addHandler(user) {
         user.on("message", (data) => {
             const MSG = JSON.parse(data.toString());
-            switch (MSG.type) {
-                case Message_1.MessageTypes.Start:
-                    if (this.pendingUser) {
-                        const game = new Game_1.Game(this.pendingUser, user);
-                        this.Games.push(game);
-                        this.pendingUser = null;
-                    }
-                    else {
-                        this.pendingUser = user;
-                    }
-                    break;
+            if (MSG.type === Message_1.MessageTypes.Start) {
+                if (this.pendingUser) {
+                    const game = new Game_1.Game(this.pendingUser, user);
+                    this.Games.push(game);
+                    this.pendingUser = null;
+                }
+                else {
+                    this.pendingUser = user;
+                    user.send(JSON.stringify({ msg: "Waiting for opponent ..." }));
+                }
             }
         });
     }

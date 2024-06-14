@@ -1,4 +1,3 @@
-import { Chess } from "chess.js";
 import { WebSocket } from "ws";
 import { Game } from "./Game";
 import { MessageTypes } from "./Message";
@@ -25,17 +24,17 @@ export class Manager {
   private addHandler(user:WebSocket) {
     user.on("message", (data) => {
       const MSG = JSON.parse(data.toString());
-      switch (MSG.type) {
-        case MessageTypes.Start:
-          if(this.pendingUser) {
-            const game = new Game(this.pendingUser, user);
-            this.Games.push(game);
-            this.pendingUser = null;
-          } else {
-            this.pendingUser = user;
-          }
-          break;
+      if(MSG.type === MessageTypes.Start) {
+        if(this.pendingUser) {
+          const game = new Game(this.pendingUser, user);
+          this.Games.push(game);
+          this.pendingUser = null;
+        }
+        else {
+          this.pendingUser = user;
+          user.send(JSON.stringify({ msg: "Waiting for opponent ..." }));
+        }
       }
     });
-  }
+  }  
 };
