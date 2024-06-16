@@ -1,36 +1,64 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Manager = void 0;
 const Game_1 = require("./Game");
-const Message_1 = require("./Message");
+const User_1 = __importDefault(require("./User"));
 class Manager {
     constructor() {
         this.pendingUser = null;
         this.Games = [];
         this.Users = [];
     }
-    addUser(user) {
-        this.Users.push(user);
-        this.addHandler(user);
+    findUserUsingID(ID) {
+        return this.Users.filter((x) => x.userID === ID)[0];
+    }
+    addUser(user, username) {
+        const x = new User_1.default(user, username);
+        user.send(JSON.stringify({ msg: "success", userID: x.userID }));
+        this.Users.push(x);
     }
     removeUser(user) {
-        this.Users.filter((x) => user !== x);
+        this.Users.filter((x) => user !== x.socket);
     }
-    addHandler(user) {
-        user.on("message", (data) => {
-            const MSG = JSON.parse(data.toString());
-            if (MSG.type === Message_1.MessageTypes.Start) {
-                if (this.pendingUser) {
-                    const game = new Game_1.Game(this.pendingUser, user);
-                    this.Games.push(game);
-                    this.pendingUser = null;
+    gameStarter(x) {
+        if (this.pendingUser) {
+            const game = new Game_1.Game(this.pendingUser, x);
+            this.Games.push(game);
+            const board = game.getBoard();
+            this.pendingUser.socket.send(JSON.stringify({
+                msg: "start",
+                payload: {
+                    pending: false,
+                    P1: this.pendingUser.username,
+                    P2: x.username,
+                    board: board,
+                    color: "white"
                 }
-                else {
-                    this.pendingUser = user;
-                    user.send(JSON.stringify({ msg: "Waiting for opponent ..." }));
+            })),
+                x.socket.send(JSON.stringify({
+                    msg: "start",
+                    payload: {
+                        pending: false,
+                        P1: this.pendingUser.username,
+                        P2: x.username,
+                        board: board,
+                        color: "black"
+                    }
+                }));
+            this.pendingUser = null;
+        }
+        else {
+            this.pendingUser = x;
+            this.pendingUser.socket.send(JSON.stringify({
+                msg: "start",
+                payload: {
+                    pending: true
                 }
-            }
-        });
+            }));
+        }
     }
 }
 exports.Manager = Manager;

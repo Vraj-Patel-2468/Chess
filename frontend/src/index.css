@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {  
+  font-family: 'Roboto', sans-serif;
+}
+
+.gradient-bg {
+    background: linear-gradient(to bottom right, #4b6cb7, #182848);
+    height: 100vh;
+}

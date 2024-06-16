@@ -9,24 +9,27 @@ class Game {
         this.startTime = new Date();
         this.moves = [];
         this.chess = new chess_js_1.Chess();
-        this.P1.send(JSON.stringify({ color: "White" }));
-        this.P2.send(JSON.stringify({ color: "Black" }));
+        this.P1.socket.send(JSON.stringify({ userID: this.P1.userID, color: "White" }));
+        this.P2.socket.send(JSON.stringify({ userID: this.P2.userID, color: "Black" }));
         this.startGame();
+    }
+    getBoard() {
+        return this.chess.board();
     }
     makeMove(from, to) {
         const move = this.chess.move({ from, to });
         if (move) {
             this.moves.push({ from, to });
-            this.P1.send(this.chess.ascii());
-            this.P2.send(this.chess.ascii());
-            this.P1.send(JSON.stringify({ type: "move", from, to }));
-            this.P2.send(JSON.stringify({ type: "move", from, to }));
+            this.P1.socket.send(this.chess.ascii());
+            this.P2.socket.send(this.chess.ascii());
+            this.P1.socket.send(JSON.stringify({ type: "move", from, to }));
+            this.P2.socket.send(JSON.stringify({ type: "move", from, to }));
         }
         //TODO: Check all validations an see if game is getting over or not.
     }
     startGame() {
         if (this.chess.turn() === "w") {
-            this.P1.on("message", (data) => {
+            this.P1.socket.on("message", (data) => {
                 const MSG = JSON.parse(data.toString());
                 if (MSG.type === "move") {
                     this.makeMove(MSG.from, MSG.to);
@@ -34,7 +37,7 @@ class Game {
             });
         }
         else {
-            this.P2.on("message", (data) => {
+            this.P2.socket.on("message", (data) => {
                 const MSG = JSON.parse(data.toString());
                 if (MSG.type === "move") {
                     this.makeMove(MSG.from, MSG.to);
