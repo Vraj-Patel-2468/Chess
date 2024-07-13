@@ -1,4 +1,5 @@
 export enum MessageTypes {
+  Cancel = "cancel",
   New = "newuser",
   Move = "move",
   Game = "game",

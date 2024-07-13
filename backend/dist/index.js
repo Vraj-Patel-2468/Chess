@@ -13,6 +13,9 @@ Server.on("connection", (socket) => {
         if (MSG.type === Message_1.MessageTypes.New) {
             manager.addUser(socket, MSG.username);
         }
+        if (MSG.type === Message_1.MessageTypes.Cancel) {
+            manager.makePendingUserNull(MSG.userID);
+        }
         if (MSG.type === Message_1.MessageTypes.Start) {
             const player = manager.findUserUsingID(MSG.userID);
             manager.gameStarter(player);

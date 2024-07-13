@@ -11,6 +11,7 @@ import bKnight from "../assets/bN.png";
 import bBishop from "../assets/bB.png";
 import bQueen from "../assets/bQ.png";
 import bKing from "../assets/bK.png";
+import { MouseEventHandler } from "react";
 
 type Piece = {
   square: string;
@@ -20,6 +21,7 @@ type Piece = {
 
 type BoardProps = {
   board: (Piece | null)[][];
+  handleMoveRequest: MouseEventHandler<HTMLDivElement>;
 };
 
 function getPieceImage(piece: Piece) {
@@ -70,7 +72,7 @@ function getPieceSymbol(piece: Piece) {
   return pieces[color][type] || null;
 }
 
-export default function Board({ board }: BoardProps) {
+export function WhiteBoard({ board, handleMoveRequest }: BoardProps) {
   return (
     <div className="">
       {board.map((row, i) => (
@@ -78,9 +80,40 @@ export default function Board({ board }: BoardProps) {
           {row.map((box, j) => (
             <div
               className={`w-16 h-16 border ${
-                ((i + 1) + j) % 2 ? "bg-slate-400" : "bg-slate-700"
+                (i + j) % 2 ? "bg-slate-400" : "bg-slate-700"
               }`}
+              id={`${String.fromCharCode(97 + j)}${8 - i}`}
               key={j}
+              onClick={handleMoveRequest}
+            >
+              {box && box.type && box.color ? (
+                <img
+                  className="w-full h-full object-contain"
+                  src={getPieceImage(box)}
+                  alt={getPieceSymbol(box) || ""}
+                />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function BlackBoard({ board, handleMoveRequest }: BoardProps) {
+  return (
+    <div className="">
+      {board.slice().reverse().map((row, i) => (
+        <div className="flex" key={i}>
+          {row.map((box, j) => (
+            <div
+              className={`w-16 h-16 border ${
+                (i + j) % 2 ? "bg-slate-400" : "bg-slate-700"
+              }`}
+              id={`${String.fromCharCode(97 + j)}${i + 1}`}
+              key={j}
+              onClick={handleMoveRequest}
             >
               {box && box.type && box.color ? (
                 <img

@@ -11,8 +11,11 @@ Server.on("connection", (socket: WebSocket) => {
   socket.on("message", (data) => {
     const MSG = JSON.parse(data.toString());
     if (MSG.type === MessageTypes.New) {
-      manager.addUser(socket, MSG.username);      
+      manager.addUser(socket, MSG.username);  
     }
+    if(MSG.type === MessageTypes.Cancel) {
+      manager.makePendingUserNull(MSG.userID);
+    } 
     if(MSG.type === MessageTypes.Start) {
       const player = manager.findUserUsingID(MSG.userID);
       manager.gameStarter(player);

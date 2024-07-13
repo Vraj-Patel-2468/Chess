@@ -23,6 +23,17 @@ export class Manager {
     this.Users.push(x);    
   }
 
+  public makePendingUserNull(userID: string) {
+    this.pendingUser = null;
+    const x: User = this.findUserUsingID(userID);
+    x.socket.send(JSON.stringify(
+      {
+        msg: "cancel",
+        status: "done"
+      }
+    ));
+  }
+
   public removeUser(user: WebSocket) {
     this.Users.filter((x) => user !== x.socket);
   }
@@ -33,7 +44,7 @@ export class Manager {
       this.Games.push(game);
       const board = game.getBoard();
       this.pendingUser.socket.send(JSON.stringify({
-        msg: "start",
+        msg: MessageTypes.Start,
         payload: {
           pending: false,
           P1: this.pendingUser.username,
@@ -43,7 +54,7 @@ export class Manager {
         }
       })),
       x.socket.send(JSON.stringify({
-        msg: "start",
+        msg: MessageTypes.Start,
         payload: {
           pending: false,
           P1: this.pendingUser.username,
@@ -53,15 +64,17 @@ export class Manager {
         }
       }));
       this.pendingUser = null;
+      game.startGame();
     }
     else {
       this.pendingUser = x;
       this.pendingUser.socket.send(JSON.stringify({
-        msg: "start",
+        msg: MessageTypes.Start,
         payload: {
           pending: true
         }
       }));
     }      
   }  
+
 };

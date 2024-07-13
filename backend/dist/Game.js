@@ -9,41 +9,74 @@ class Game {
         this.startTime = new Date();
         this.moves = [];
         this.chess = new chess_js_1.Chess();
-        this.P1.socket.send(JSON.stringify({ userID: this.P1.userID, color: "White" }));
-        this.P2.socket.send(JSON.stringify({ userID: this.P2.userID, color: "Black" }));
         this.startGame();
     }
     getBoard() {
-        return this.chess.board();
+        let boardState = this.chess.board();
+        const squares = [
+            "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
+            "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
+            "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
+            "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
+            "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
+            "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+            "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
+            "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"
+        ];
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                boardState[i][j] = boardState[i][j] == null ? { square: squares[i * 8 + j], type: null, color: null } : boardState[i][j];
+            }
+        }
+        return boardState;
     }
-    makeMove(from, to) {
-        const move = this.chess.move({ from, to });
+    makeMove(from, to, promotion = "") {
+        let move;
+        try {
+            move = this.chess.move({ from, to, promotion });
+        }
+        catch (e) {
+            this.P1.socket.send(JSON.stringify({ type: "error", error: "Invalid move" }));
+            this.P2.socket.send(JSON.stringify({ type: "error", error: "Invalid move" }));
+            return;
+        }
         if (move) {
             this.moves.push({ from, to });
-            this.P1.socket.send(this.chess.ascii());
-            this.P2.socket.send(this.chess.ascii());
-            this.P1.socket.send(JSON.stringify({ type: "move", from, to }));
-            this.P2.socket.send(JSON.stringify({ type: "move", from, to }));
-        }
-        //TODO: Check all validations an see if game is getting over or not.
-    }
-    startGame() {
-        if (this.chess.turn() === "w") {
-            this.P1.socket.on("message", (data) => {
-                const MSG = JSON.parse(data.toString());
-                if (MSG.type === "move") {
-                    this.makeMove(MSG.from, MSG.to);
-                }
-            });
+            const board = this.getBoard();
+            const msgPayload = {
+                P1: this.P1.username,
+                P2: this.P2.username,
+                board,
+                moveDetails: move
+            };
+            this.P1.socket.send(JSON.stringify({ msg: "move", payload: Object.assign(Object.assign({}, msgPayload), { color: "white" }) }));
+            this.P2.socket.send(JSON.stringify({ msg: "move", payload: Object.assign(Object.assign({}, msgPayload), { color: "black" }) }));
+            if (this.chess.isGameOver()) {
+                const winner = this.chess.turn() === "w" ? this.P1 : this.P2;
+                this.P1.socket.send(JSON.stringify({ type: "gameover", winner: winner.username }));
+                this.P2.socket.send(JSON.stringify({ type: "gameover", winner: winner.username }));
+            }
         }
         else {
-            this.P2.socket.on("message", (data) => {
-                const MSG = JSON.parse(data.toString());
-                if (MSG.type === "move") {
-                    this.makeMove(MSG.from, MSG.to);
-                }
-            });
+            this.P1.socket.send(JSON.stringify({ type: "error", error: "Invalid move" }));
+            this.P2.socket.send(JSON.stringify({ type: "error", error: "Invalid move" }));
         }
+    }
+    startGame() {
+        this.P1.socket.on("message", (data) => {
+            const MSG = JSON.parse(data.toString());
+            if (MSG.type === "move") {
+                const { from, to, promotion } = MSG;
+                this.makeMove(from, to, promotion);
+            }
+        });
+        this.P2.socket.on("message", (data) => {
+            const MSG = JSON.parse(data.toString());
+            if (MSG.type === "move") {
+                const { from, to, promotion } = MSG;
+                this.makeMove(from, to, promotion);
+            }
+        });
     }
 }
 exports.Game = Game;

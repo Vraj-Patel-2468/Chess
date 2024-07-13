@@ -1,18 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {  
-  font-family: 'Roboto', sans-serif;
-}
-
-.gradient-bg {
-    background: linear-gradient(to bottom right, #4b6cb7, #182848);
-    height: 100vh;
+.caveat {
+  font-family: "Caveat", cursive;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: italic;
 }

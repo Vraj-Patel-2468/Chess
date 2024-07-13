@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageTypes = void 0;
 var MessageTypes;
 (function (MessageTypes) {
+    MessageTypes["Cancel"] = "cancel";
     MessageTypes["New"] = "newuser";
     MessageTypes["Move"] = "move";
     MessageTypes["Game"] = "game";

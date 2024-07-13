@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Manager = void 0;
 const Game_1 = require("./Game");
+const Message_1 = require("./Message");
 const User_1 = __importDefault(require("./User"));
 class Manager {
     constructor() {
@@ -20,6 +21,14 @@ class Manager {
         user.send(JSON.stringify({ msg: "success", userID: x.userID }));
         this.Users.push(x);
     }
+    makePendingUserNull(userID) {
+        this.pendingUser = null;
+        const x = this.findUserUsingID(userID);
+        x.socket.send(JSON.stringify({
+            msg: "cancel",
+            status: "done"
+        }));
+    }
     removeUser(user) {
         this.Users.filter((x) => user !== x.socket);
     }
@@ -29,7 +38,7 @@ class Manager {
             this.Games.push(game);
             const board = game.getBoard();
             this.pendingUser.socket.send(JSON.stringify({
-                msg: "start",
+                msg: Message_1.MessageTypes.Start,
                 payload: {
                     pending: false,
                     P1: this.pendingUser.username,
@@ -39,7 +48,7 @@ class Manager {
                 }
             })),
                 x.socket.send(JSON.stringify({
-                    msg: "start",
+                    msg: Message_1.MessageTypes.Start,
                     payload: {
                         pending: false,
                         P1: this.pendingUser.username,
@@ -49,11 +58,12 @@ class Manager {
                     }
                 }));
             this.pendingUser = null;
+            game.startGame();
         }
         else {
             this.pendingUser = x;
             this.pendingUser.socket.send(JSON.stringify({
-                msg: "start",
+                msg: Message_1.MessageTypes.Start,
                 payload: {
                     pending: true
                 }

@@ -1,10 +1,12 @@
-import "./index.css";
-import Landing from "./pages/Landing";
+import Greeter from "./components/Greeter";
+import { Routes, Route } from "react-router-dom";
 
 export default function App() {
-    return (
-        <>
-          <Landing />
-        </>
-    );
+  return (
+    <div className="App">
+      <Routes>
+        <Route path="*" element={<Greeter />}></Route>
+      </Routes>
+    </div>
+  );
 }
